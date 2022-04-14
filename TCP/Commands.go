@@ -2,13 +2,14 @@ package TCP
 
 import (
 	"bufio"
+	"log"
 	"net"
 	"strings"
 	"sync"
 )
 
 type cache struct {
-	data map[string]string
+	data map[string]string //Change to forms later
 	*sync.RWMutex
 }
 
@@ -23,41 +24,68 @@ func HandleConnection(conn net.Conn, done chan bool) {
 	for s.Scan() {
 
 		data := s.Text()
+		log.Println(data)
 
 		if data == "exit" {
 			return
 		}
 
 		if data == "shutdown" {
-			conn.Write([]byte("Shutting Down..."))
+			log.Println("Shutting Down")
 			done <- true
 			return
 		}
 
-		handleCommand(data, conn)
+		// handleCommand(data, conn)
+		func() {
+			str := strings.Split(data, " ")
+
+			if len(str) <= 0 {
+				conn.Write(InvalidCommand)
+				return
+			}
+
+			switch str[0] { //Checking the Command
+			case "Test":
+				conn.Write([]byte("Dekimakura\n"))
+				return
+			case "GET":
+				get(str[1:], conn)
+			case "SET":
+				set(str[1:], conn)
+			case "Send":
+			default:
+				conn.Write(InvalidCommand)
+			}
+
+			conn.Write([]byte("\n>"))
+		}()
 	}
 }
 
-func handleCommand(inp string, conn net.Conn) {
+// func handleCommand(inp string, conn net.Conn) {
 
-	str := strings.Split(inp, " ")
+// 	str := strings.Split(inp, " ")
 
-	if len(str) <= 0 {
-		conn.Write(InvalidCommand)
-		return
-	}
+// 	if len(str) <= 0 {
+// 		conn.Write(InvalidCommand)
+// 		return
+// 	}
 
-	switch str[0] { //Checking the Command
-	case "GET":
-		get(str[1:], conn)
-	case "SET":
-		set(str[1:], conn)
-	default:
-		conn.Write(InvalidCommand)
-	}
+// 	switch str[0] { //Checking the Command
+// 	case "GET":
+// 		get(str[1:], conn)
+// 	case "SET":
+// 		set(str[1:], conn)
+// 	case "Send":
+// 	case "Comps":
+// 		conn.Write([]byte("Dekimakura"))
+// 	default:
+// 		conn.Write(InvalidCommand)
+// 	}
 
-	conn.Write([]byte("\n>"))
-}
+// 	conn.Write([]byte("\n>"))
+// }
 
 func set(cmd []string, conn net.Conn) {
 
@@ -73,7 +101,7 @@ func set(cmd []string, conn net.Conn) {
 	c.data[key] = val
 	c.Unlock()
 
-	conn.Write([]byte("OK"))
+	conn.Write([]byte("Added"))
 }
 
 func get(cmd []string, conn net.Conn) {

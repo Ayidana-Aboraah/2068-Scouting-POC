@@ -8,11 +8,12 @@ import (
 func StartTCP() {
 	listener, err := net.Listen("tcp", ":9500")
 	if err != nil {
-		// t.Error(err)
 		log.Println(err)
 	}
+	defer listener.Close()
 
 	done := make(chan bool)
+	defer close(done)
 
 	go func() {
 		for {
@@ -23,7 +24,6 @@ func StartTCP() {
 			}
 
 			log.Println("Accepted ", conn.RemoteAddr())
-			conn.Write([]byte(">"))
 
 			//create a routine dont block
 			go HandleConnection(conn, done)
@@ -31,6 +31,4 @@ func StartTCP() {
 	}()
 
 	<-done
-
-	listener.Close()
 }

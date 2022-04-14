@@ -2,8 +2,10 @@ package test
 
 import (
 	"2068_Scouting/TCP"
+	"bufio"
 	"log"
 	"net"
+	"strings"
 	"testing"
 	"time"
 )
@@ -26,7 +28,6 @@ func TestStartTCP(t *testing.T) {
 			}
 
 			log.Println("Accepted ", conn.RemoteAddr())
-			conn.Write([]byte(">"))
 
 			//create a routine dont block
 			go TCP.HandleConnection(conn, done)
@@ -38,5 +39,40 @@ func TestStartTCP(t *testing.T) {
 		return
 	case <-timer.C:
 		return
+	}
+}
+
+func TestSendTCP(t *testing.T) {
+	go TCP.StartTCP()
+
+	connection, err := net.Dial("tcp", ":9500")
+	if err != nil {
+		t.Error(err)
+	}
+	defer connection.Close()
+
+	connection.Write([]byte("shutdown\n"))
+}
+
+func TestRecieveTCP(t *testing.T) {
+	go TCP.StartTCP()
+
+	connection, err := net.Dial("tcp", ":9500")
+	if err != nil {
+		t.Error(err)
+	}
+	defer connection.Close()
+
+	connection.Write([]byte("Test\n"))
+
+	message, err := bufio.NewReader(connection).ReadString('\n')
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log("Message from server: " + message)
+
+	if !strings.Contains(message, "Dekimakura") {
+		t.Error("Results not matching")
 	}
 }
