@@ -1,100 +1,36 @@
 package TCP
 
 import (
-	"bufio"
+	"log"
 	"net"
-	"strings"
-	"sync"
 )
 
-type cache struct {
-	data map[string]string
-	*sync.RWMutex
-}
+func StartTCP() {
+	listener, err := net.Listen("tcp", ":9500")
+	if err != nil {
+		// t.Error(err)
+		log.Println(err)
+	}
 
-var c = cache{data: make(map[string]string), RWMutex: &sync.RWMutex{}}
-var InvalidCommand = []byte("Invalid Command")
+	done := make(chan bool)
 
-func HandleConnection(conn net.Conn) {
-	defer conn.Close()
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Println("Accept Error", err)
+				continue
+			}
 
-	s := bufio.NewScanner(conn)
-
-	for s.Scan() {
-
-		data := s.Text()
-
-		if data == "" {
+			log.Println("Accepted ", conn.RemoteAddr())
 			conn.Write([]byte(">"))
-			continue
+
+			//create a routine dont block
+			go HandleConnection(conn, done)
 		}
+	}()
 
-		if data == "exit" {
-			return
-		}
+	<-done
 
-		handleCommand(data, conn)
-	}
-}
-
-func handleCommand(inp string, conn net.Conn) {
-
-	str := strings.Split(inp, " ")
-
-	if len(str) <= 0 {
-		conn.Write(InvalidCommand)
-		return
-	}
-
-	command := str[0]
-
-	switch command {
-
-	case "GET":
-		get(str[1:], conn)
-	case "SET":
-		set(str[1:], conn)
-	default:
-		conn.Write(InvalidCommand)
-	}
-
-	conn.Write([]byte("\n>"))
-}
-
-func set(cmd []string, conn net.Conn) {
-
-	if len(cmd) < 2 {
-		conn.Write(InvalidCommand)
-		return
-	}
-
-	key := cmd[0]
-	val := cmd[1]
-
-	c.Lock()
-	c.data[key] = val
-	c.Unlock()
-
-	conn.Write([]byte("OK"))
-}
-
-func get(cmd []string, conn net.Conn) {
-
-	if len(cmd) < 1 {
-		conn.Write(InvalidCommand)
-		return
-	}
-
-	val := cmd[0]
-
-	c.RLock()
-	ret, ok := c.data[val]
-	c.RUnlock()
-
-	if !ok {
-		conn.Write([]byte("Nil"))
-		return
-	}
-
-	conn.Write([]byte(ret))
+	listener.Close()
 }
