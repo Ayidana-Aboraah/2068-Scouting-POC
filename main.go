@@ -3,7 +3,6 @@ package main
 import (
 	"2068_Scouting/TCP"
 	"fmt"
-	"strings"
 )
 
 // var form struct {
@@ -16,7 +15,6 @@ import (
 func main() {
 	//defer Save
 	var input string
-	var newPut []string
 	var host bool
 	fmt.Println("WELCOME!!!")
 	for {
@@ -24,17 +22,15 @@ func main() {
 		if host {
 			fmt.Println("Host Options: -q = quit hosting | -n = new competition | -e = edit competition")
 		} else {
-			fmt.Println("Options: -q = close app | -h = host | -c + ip = connect to a host")
+			fmt.Println("Options: -q = close app | -h = host | -c = connect to a host")
 		}
 
 		TCP.ListCompetitions()
 
 		fmt.Scanln(&input)
 
-		newPut = strings.Split(input, " ")
-
 		if host {
-			switch newPut[0] {
+			switch input {
 			case "-q":
 				TCP.ShutDown()
 				host = false
@@ -42,9 +38,12 @@ func main() {
 				formMenu(&input)
 			}
 		} else {
-			switch newPut[0] {
+			switch input {
 			case "-c":
-				TCP.ConnectToTCP(newPut[1])
+				fmt.Println("IP: ")
+				fmt.Scanln(&input)
+				TCP.ConnectToTCP(input)
+				fmt.Println("You Now Connected!")
 			case "-h":
 				go TCP.StartTCP()
 				fmt.Println("\nStarted Hosting")

@@ -1,6 +1,7 @@
 package TCP
 
 import (
+	"bufio"
 	"log"
 	"net"
 	"strings"
@@ -60,6 +61,11 @@ func FindIP() string {
 func ConnectToTCP(ip string) error {
 	connection, err := net.Dial("tcp", ip+":9500")
 	conn = connection
+
+	connection.Write([]byte("Comp list\n"))
+	message, _ := bufio.NewReader(connection).ReadString('\n')
+
+	competitions = strings.Split(message, "¶")
 	return err
 }
 

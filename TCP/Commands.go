@@ -62,10 +62,11 @@ func HandleConnection(conn net.Conn, done chan bool) {
 func competition(cmd []string, conn net.Conn) {
 	switch cmd[0] {
 	case "list":
+		var temp string
 		for _, comp := range competitions {
-			conn.Write([]byte(comp))
+			temp += comp + "¶"
 		}
-		conn.Write([]byte("\n"))
+		conn.Write([]byte(temp + "\n"))
 	case "find":
 		for _, comp := range competitions {
 			if cmd[1] != comp {
