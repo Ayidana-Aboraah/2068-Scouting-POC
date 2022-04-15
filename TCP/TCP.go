@@ -65,7 +65,7 @@ func ConnectToTCP(ip string) error {
 	connection.Write([]byte("Comp list\n"))
 	message, _ := bufio.NewReader(connection).ReadString('\n')
 
-	competitions = strings.Split(message, "¶")
+	compList = strings.Split(message, "¶")
 	return err
 }
 

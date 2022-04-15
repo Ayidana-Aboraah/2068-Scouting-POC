@@ -63,12 +63,12 @@ func competition(cmd []string, conn net.Conn) {
 	switch cmd[0] {
 	case "list":
 		var temp string
-		for _, comp := range competitions {
+		for _, comp := range compList {
 			temp += comp + "¶"
 		}
 		conn.Write([]byte(temp + "\n"))
 	case "find":
-		for _, comp := range competitions {
+		for _, comp := range compList {
 			if cmd[1] != comp {
 				continue
 			}
@@ -77,13 +77,15 @@ func competition(cmd []string, conn net.Conn) {
 			conn.Write([]byte(comp + "\n"))
 		}
 	case "add":
-		for _, comp := range competitions {
-			if cmd[1] == comp {
-				conn.Write([]byte("!"))
-				break
+		for _, comp := range compList {
+			if cmd[1] != comp {
+				continue
 			}
+
+			conn.Write([]byte("!"))
+
 		}
-		competitions = append(competitions, cmd[1])
+		compList = append(compList, cmd[1])
 	}
 }
 

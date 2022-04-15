@@ -5,22 +5,15 @@ import (
 	"fmt"
 )
 
-// var form struct {
-// 	Team  uint16
-// 	Questions []Database.Question
-// }
-
-//
-
 func main() {
 	//defer Save
 	var input string
 	var host bool
-	fmt.Println("WELCOME!!!")
+
 	for {
 		fmt.Println("H O M E")
 		if host {
-			fmt.Println("Host Options: -q = quit hosting | -n = new competition | -e = edit competition")
+			fmt.Println("Host Options: -q = quit hosting | -n = new competition")
 		} else {
 			fmt.Println("Options: -q = close app | -h = host | -c = connect to a host")
 		}
@@ -34,6 +27,7 @@ func main() {
 			case "-q":
 				TCP.ShutDown()
 				host = false
+				fmt.Println("Stopped Hosting")
 			case "-n":
 				formMenu(&input)
 			}
@@ -54,9 +48,6 @@ func main() {
 				return
 			}
 		}
-
-		input = ""
-
 	}
 }
 
@@ -66,10 +57,12 @@ func formMenu(input *string) {
 	fmt.Println("What's the name of the Competiton?")
 	fmt.Scanln(input)
 
-	//Add the name to the competition name list
+	var newComp TCP.Form
+	newName := *input
 
 	fmt.Println("-a = new QnA | -b = back a question | -f = show full form | -q = exits menu")
 	fmt.Scanln(input)
+
 	for {
 		switch *input {
 		case "-a":
@@ -79,6 +72,7 @@ func formMenu(input *string) {
 			fmt.Println("Save? [Y/N]")
 			fmt.Scanln(input)
 			if *input == "Y" {
+				TCP.AddCompetition(newName, newComp)
 				//Add the form to the competiton list
 			}
 			return

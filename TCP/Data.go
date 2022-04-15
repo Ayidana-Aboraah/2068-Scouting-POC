@@ -7,14 +7,16 @@ import (
 	"sync"
 )
 
-var competitions []string
+var compList []string
 
-var c = cache{
+var compTemplates map[string]Form
+
+var competitions = netComp{
 	competitions: make(map[string][]Form),
 	RWMutex:      &sync.RWMutex{},
 }
 
-type cache struct {
+type netComp struct {
 	competitions map[string][]Form
 	*sync.RWMutex
 }
@@ -55,6 +57,10 @@ func FromBytes(data []byte) Form {
 	return newForm
 }
 
+func AddCompetition(compName string, newForm Form) {
+	compTemplates[compName] = newForm
+}
+
 func ListCompetitions() {
-	fmt.Println("Competitions:", competitions)
+	fmt.Println("Competitions:", compList)
 }
