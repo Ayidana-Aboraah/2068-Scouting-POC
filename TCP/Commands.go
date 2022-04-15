@@ -5,15 +5,8 @@ import (
 	"log"
 	"net"
 	"strings"
-	"sync"
 )
 
-type cache struct {
-	data map[string]string //Change to forms later
-	*sync.RWMutex
-}
-
-var c = cache{data: make(map[string]string), RWMutex: &sync.RWMutex{}}
 var InvalidCommand = []byte("Invalid Command")
 
 func HandleConnection(conn net.Conn, done chan bool) {
@@ -24,7 +17,6 @@ func HandleConnection(conn net.Conn, done chan bool) {
 	for s.Scan() {
 
 		data := s.Text()
-		log.Println(data)
 
 		if data == "exit" {
 			return
@@ -37,90 +29,97 @@ func HandleConnection(conn net.Conn, done chan bool) {
 		}
 
 		// handleCommand(data, conn)
-		func() {
-			str := strings.Split(data, " ")
+		// func() {
+		str := strings.Split(data, " ")
 
-			if len(str) <= 0 {
-				conn.Write(InvalidCommand)
-				return
-			}
+		if len(str) <= 0 {
+			conn.Write(InvalidCommand)
+			return
+		}
 
-			switch str[0] { //Checking the Command
-			case "Test":
-				conn.Write([]byte("Dekimakura\n"))
-				return
-			case "GET":
-				get(str[1:], conn)
-			case "SET":
-				set(str[1:], conn)
-			case "Send":
-			default:
-				conn.Write(InvalidCommand)
-			}
+		switch str[0] { //Checking the Command
+		case "Test":
+			conn.Write([]byte("Dekimakura\n"))
+			return
+		case "Comp":
+			competition(str[1:], conn)
+		case "SendT":
+			log.Println(FromBytes(s.Bytes()[6:]))
+			conn.Write(append(s.Bytes()[6:], []byte("\n")...))
+		// case "GET":
+		// 	get(str[1:], conn)
+		// case "SET":
+		// 	set(str[1:], conn)
+		default:
+			conn.Write(InvalidCommand)
+		}
 
-			conn.Write([]byte("\n>"))
-		}()
+		conn.Write([]byte("\n>"))
+		// }()
 	}
 }
 
-// func handleCommand(inp string, conn net.Conn) {
+func competition(cmd []string, conn net.Conn) {
+	switch cmd[0] {
+	case "list":
+		for _, comp := range competitions {
+			conn.Write([]byte(comp))
+		}
+		conn.Write([]byte("\n"))
+	case "find":
+		for _, comp := range competitions {
+			if cmd[1] != comp {
+				continue
+			}
 
-// 	str := strings.Split(inp, " ")
+			//Send back the form for that competitons
+			conn.Write([]byte(comp + "\n"))
+		}
+	case "add":
+		for _, comp := range competitions {
+			if cmd[1] == comp {
+				conn.Write([]byte("!"))
+				break
+			}
+		}
+		competitions = append(competitions, cmd[1])
+	}
+}
 
-// 	if len(str) <= 0 {
+// func set(cmd []string, conn net.Conn) {
+
+// 	if len(cmd) < 2 {
 // 		conn.Write(InvalidCommand)
 // 		return
 // 	}
 
-// 	switch str[0] { //Checking the Command
-// 	case "GET":
-// 		get(str[1:], conn)
-// 	case "SET":
-// 		set(str[1:], conn)
-// 	case "Send":
-// 	case "Comps":
-// 		conn.Write([]byte("Dekimakura"))
-// 	default:
-// 		conn.Write(InvalidCommand)
-// 	}
+// 	key := cmd[0]
+// 	val := cmd[1]
 
-// 	conn.Write([]byte("\n>"))
+// 	c.Lock()
+// 	c.data[key] = val
+// 	c.Unlock()
+
+// 	conn.Write([]byte("Added"))
 // }
 
-func set(cmd []string, conn net.Conn) {
+// func get(cmd []string, conn net.Conn) {
 
-	if len(cmd) < 2 {
-		conn.Write(InvalidCommand)
-		return
-	}
+// 	if len(cmd) < 1 {
+// 		conn.Write(InvalidCommand)
+// 		return
+// 	}
 
-	key := cmd[0]
-	val := cmd[1]
+// 	val := cmd[0]
 
-	c.Lock()
-	c.data[key] = val
-	c.Unlock()
+// 	c.RLock()
+// 	ret, ok := c.data[val]
+// 	c.RUnlock()
 
-	conn.Write([]byte("Added"))
-}
+// 	if !ok {
+// 		conn.Write([]byte("Nil"))
+// 		return
+// 	}
 
-func get(cmd []string, conn net.Conn) {
-
-	if len(cmd) < 1 {
-		conn.Write(InvalidCommand)
-		return
-	}
-
-	val := cmd[0]
-
-	c.RLock()
-	ret, ok := c.data[val]
-	c.RUnlock()
-
-	if !ok {
-		conn.Write([]byte("Nil"))
-		return
-	}
-
-	conn.Write([]byte(ret))
-}
+// 	conn.Write([]byte(ret))
+// }

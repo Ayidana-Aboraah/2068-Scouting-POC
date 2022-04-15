@@ -4,6 +4,6 @@ import (
 	"2068_Scouting/TCP"
 )
 
-func main() {
+func altmain() {
 	TCP.StartTCP()
 }
