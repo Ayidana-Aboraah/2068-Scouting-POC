@@ -7,11 +7,11 @@ import (
 	"sync"
 )
 
-var compList []string
+var compKeys []string //Used by Client
 
-var compTemplates map[string]Form
+var compTemplates map[string]Form //Used by Host
 
-var competitions = netComp{
+var database = netComp{
 	competitions: make(map[string][]Form),
 	RWMutex:      &sync.RWMutex{},
 }
@@ -24,18 +24,18 @@ type netComp struct {
 type Form struct {
 	Team               uint16
 	Questions, Answers []string
-	// Questions []struct{ Question, Answer string }
 }
 
 func ToBytes(form Form) []byte {
 	teamByte := make([]byte, 2)
-	binary.BigEndian.PutUint16(teamByte, uint16(form.Team))
+	binary.BigEndian.PutUint16(teamByte, form.Team)
 
 	var bodyString string
 
 	for i := range form.Questions {
 		bodyString += form.Questions[i] + "¶" + form.Answers[i] + "¶"
 	}
+	bodyString += "\n"
 
 	return append(teamByte, []byte(bodyString)...)
 }
@@ -46,7 +46,7 @@ func FromBytes(data []byte) Form {
 
 	body := strings.Split(string(data[2:]), "¶")
 
-	for i := range body {
+	for i := 0; i < len(body)-1; i++ {
 		if i%2 == 0 {
 			newForm.Questions = append(newForm.Questions, body[i])
 		} else {
@@ -62,5 +62,9 @@ func AddCompetition(compName string, newForm Form) {
 }
 
 func ListCompetitions() {
-	fmt.Println("Competitions:", compList)
+	var output string
+	for k := range compTemplates {
+		output += k + "\n"
+	}
+	fmt.Println("Competitions:", output)
 }

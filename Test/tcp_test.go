@@ -54,7 +54,10 @@ func TestSendTCP(t *testing.T) {
 	connection.Write([]byte("shutdown\n"))
 }
 
+//Make a recieve function
+
 func TestRecieveTCP(t *testing.T) {
+	time.Sleep(2 * time.Second)
 	go TCP.StartTCP()
 
 	connection, err := net.Dial("tcp", ":9500")
@@ -77,7 +80,7 @@ func TestRecieveTCP(t *testing.T) {
 	}
 }
 
-func TestSendAndRecieve(t *testing.T) {
+func TestSubmit(t *testing.T) {
 	go TCP.StartTCP()
 
 	connection, err := net.Dial("tcp", ":9500")
@@ -87,21 +90,23 @@ func TestSendAndRecieve(t *testing.T) {
 	defer connection.Close()
 
 	form := TCP.Form{
-		Team:      2020,
-		Questions: []string{"How old are you?"},
-		Answers:   []string{"Your Mom"},
+		Team:      2022,
+		Questions: []string{"Location Of My Mom?"},
+		Answers:   []string{"In My Bed"},
 	}
 
-	connection.Write(append([]byte("SendT "), append(TCP.ToBytes(form), []byte("\n")...)...))
+	connection.Write(append([]byte("Submit Test "), TCP.ToBytes(form)...))
 
-	scaner := bufio.NewScanner(connection)
+	scanner := bufio.NewScanner(connection)
 	if err != nil {
 		t.Error(err)
 	}
 
-	scaner.Scan()
+	scanner.Scan()
 
-	newForm := TCP.FromBytes(scaner.Bytes())
+	t.Log(scanner.Text())
+
+	newForm := TCP.FromBytes(scanner.Bytes())
 
 	//Compare the 2
 	if form.Team != newForm.Team {

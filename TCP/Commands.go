@@ -43,15 +43,15 @@ func HandleConnection(conn net.Conn, done chan bool) {
 			return
 		case "Comp":
 			competition(str[1:], conn)
-		case "SendT":
-			log.Println(FromBytes(s.Bytes()[6:]))
-			conn.Write(append(s.Bytes()[6:], []byte("\n")...))
-		// case "GET":
-		// 	get(str[1:], conn)
-		// case "SET":
-		// 	set(str[1:], conn)
+		case "Submit":
+			database.competitions[str[1]] = []Form{} //For Testing
+
+			submission := FromBytes(s.Bytes()[len(str[1])+8:])
+			database.competitions[str[1]] = append(database.competitions[str[1]], submission)
+			conn.Write(ToBytes(database.competitions[str[1]][0]))
+			// conn.Write(s.Bytes()[8+len(str[1]):])
 		default:
-			conn.Write(InvalidCommand)
+			conn.Write([]byte("!")) //This will act as our basic error message
 		}
 
 		conn.Write([]byte("\n>"))
@@ -63,66 +63,16 @@ func competition(cmd []string, conn net.Conn) {
 	switch cmd[0] {
 	case "list":
 		var temp string
-		for _, comp := range compList {
+		for comp := range compTemplates {
 			temp += comp + "¶"
 		}
 		conn.Write([]byte(temp + "\n"))
-	case "find":
-		for _, comp := range compList {
-			if cmd[1] != comp {
-				continue
-			}
-
-			//Send back the form for that competitons
-			conn.Write([]byte(comp + "\n"))
+	default:
+		if form, found := compTemplates[cmd[1]]; found {
+			conn.Write(ToBytes(form))
+			return
 		}
-	case "add":
-		for _, comp := range compList {
-			if cmd[1] != comp {
-				continue
-			}
 
-			conn.Write([]byte("!"))
-
-		}
-		compList = append(compList, cmd[1])
+		conn.Write([]byte("!f"))
 	}
 }
-
-// func set(cmd []string, conn net.Conn) {
-
-// 	if len(cmd) < 2 {
-// 		conn.Write(InvalidCommand)
-// 		return
-// 	}
-
-// 	key := cmd[0]
-// 	val := cmd[1]
-
-// 	c.Lock()
-// 	c.data[key] = val
-// 	c.Unlock()
-
-// 	conn.Write([]byte("Added"))
-// }
-
-// func get(cmd []string, conn net.Conn) {
-
-// 	if len(cmd) < 1 {
-// 		conn.Write(InvalidCommand)
-// 		return
-// 	}
-
-// 	val := cmd[0]
-
-// 	c.RLock()
-// 	ret, ok := c.data[val]
-// 	c.RUnlock()
-
-// 	if !ok {
-// 		conn.Write([]byte("Nil"))
-// 		return
-// 	}
-
-// 	conn.Write([]byte(ret))
-// }
