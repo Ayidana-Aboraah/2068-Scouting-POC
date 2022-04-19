@@ -8,7 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var status uint8
+// var status uint8
 
 type model struct {
 	current  [][]string
@@ -121,7 +121,7 @@ func (m model) View() string {
 	return result
 }
 
-func main() {
+func bubble_main() {
 	program := tea.NewProgram(model{
 		cursor: 0,
 		current: [][]string{
