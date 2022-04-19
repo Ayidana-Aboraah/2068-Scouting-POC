@@ -2,7 +2,6 @@ package TCP
 
 import (
 	"encoding/binary"
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -61,10 +60,11 @@ func AddCompetition(compName string, newForm Form) {
 	compTemplates[compName] = newForm
 }
 
-func ListCompetitions() {
+func ListCompetitions() string {
 	var output string
 	for k := range compTemplates {
 		output += k + "\n"
 	}
-	fmt.Println("Competitions:", output)
+
+	return output
 }
