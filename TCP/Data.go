@@ -8,7 +8,7 @@ import (
 
 var compKeys []string //Used by Client
 
-var compTemplates = map[string]Form{}//Used by Host
+var compTemplates = map[string]Form{} //Used by Host
 
 var database = netComp{
 	competitions: make(map[string][]Form),
@@ -39,17 +39,21 @@ func ToBytes(form Form) []byte {
 	return append(teamByte, []byte(bodyString)...)
 }
 
-func FromBytes(data []byte) Form {
+func FromBytes(data []byte, template bool) Form {
 	teamByte := binary.BigEndian.Uint16(data[:2])
 	newForm := Form{Team: teamByte}
 
 	body := strings.Split(string(data[2:]), "¶")
 
 	for i := 0; i < len(body)-1; i++ {
-		if i%2 == 0 {
-			newForm.Questions = append(newForm.Questions, body[i])
+		if template {
+
 		} else {
-			newForm.Answers = append(newForm.Answers, body[i])
+			if i%2 == 0 {
+				newForm.Questions = append(newForm.Questions, body[i])
+			} else {
+				newForm.Answers = append(newForm.Answers, body[i])
+			}
 		}
 	}
 

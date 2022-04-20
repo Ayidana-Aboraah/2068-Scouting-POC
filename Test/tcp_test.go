@@ -106,7 +106,7 @@ func TestSubmit(t *testing.T) {
 
 	t.Log(scanner.Text())
 
-	newForm := TCP.FromBytes(scanner.Bytes())
+	newForm := TCP.FromBytes(scanner.Bytes(), false)
 
 	//Compare the 2
 	if form.Team != newForm.Team {

@@ -46,7 +46,7 @@ func HandleConnection(conn net.Conn, done chan bool) {
 		case "Submit":
 			database.competitions[str[1]] = []Form{} //For Testing
 
-			submission := FromBytes(s.Bytes()[len(str[1])+8:])
+			submission := FromBytes(s.Bytes()[len(str[1])+8:], false)
 			database.competitions[str[1]] = append(database.competitions[str[1]], submission)
 			conn.Write(ToBytes(database.competitions[str[1]][0]))
 			// conn.Write(s.Bytes()[8+len(str[1]):])
