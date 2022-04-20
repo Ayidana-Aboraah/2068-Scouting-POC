@@ -8,7 +8,7 @@ import (
 
 var compKeys []string //Used by Client
 
-var compTemplates map[string]Form //Used by Host
+var compTemplates = map[string]Form{}//Used by Host
 
 var database = netComp{
 	competitions: make(map[string][]Form),

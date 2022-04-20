@@ -24,7 +24,7 @@ func main() {
 		default:
 			header = "Options: -q = close app | -h = host | -c = connect to a host"
 		}
-		header += "\n" + TCP.ListCompetitions()
+		header += "\nCompetitions:" + TCP.ListCompetitions()
 		fmt.Println(header)
 
 		input.Scan()
@@ -40,9 +40,11 @@ func main() {
 				return
 			}
 			status = 0
+			continue
 		case "-h", "host":
 			go TCP.StartTCP()
 			status = 2
+			continue
 		}
 
 		cmd := strings.Split(input.Text(), " ")
@@ -50,32 +52,30 @@ func main() {
 		switch cmd[0] {
 		case "-n", "new":
 			if status == 2 {
-				NewCompetition(input, blank{})
+				NewCompetition(input, false)
 			} else if status == 1 {
-				NewCompetition(input, struct{}{})
+				NewCompetition(input, true)
 			}
 		case "-c", "connect":
 			TCP.ConnectToTCP(cmd[1])
 			status = 1
 		}
-		fmt.Println(cmd)
 	}
 }
 
-func NewCompetition(input *bufio.Scanner, submission struct{}) {
-	var stop struct{}
+func NewCompetition(input *bufio.Scanner, submission bool) {
+	var stop bool
 	var newForm TCP.Form
 	var currentIdx uint8
 
 	fmt.Println("Commands: -c or close + name (if empty it will not save) = to stop editing")
 	for {
+		fmt.Println(currentIdx)
 		input.Scan()
-
-		fmt.Println(newForm.Questions[currentIdx])
 
 		switch input.Text() {
 		case "-c", "close":
-			stop = struct{}{}
+			stop = true
 			fmt.Println("Closing...")
 		case ">":
 			currentIdx++
@@ -83,10 +83,10 @@ func NewCompetition(input *bufio.Scanner, submission struct{}) {
 			currentIdx--
 		}
 
-		if stop == struct{}{} {
+		if stop {
 			fmt.Println("Enter the Competition Name...")
 			input.Scan()
-			if submission == struct{}{} {
+			if submission {
 				TCP.SubmitForm(newForm)
 			} else {
 				TCP.AddCompetition(input.Text(), newForm) //Save
