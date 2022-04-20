@@ -32,7 +32,6 @@ func ALTmain() {
 				status = 0
 				fmt.Println("Stopped Hosting")
 			case "-n":
-				formMenu(&input)
 			}
 		case 1:
 		default:
@@ -51,43 +50,6 @@ func ALTmain() {
 				TCP.DisconnectTCP()
 				return
 			}
-		}
-	}
-}
-
-func formMenu(input *string) {
-	fmt.Println("\nWELCOME TO COMPETITION MAKER\n")
-
-	fmt.Println("What's the name of the Competiton?")
-	fmt.Scanln(input)
-
-	var newComp TCP.Form
-	newName := *input
-
-	for {
-		QnA("-a = new QnA | -b = back a question | -f = show full form | -q = exits menu", input)
-
-		switch *input {
-		case "-a":
-			QnA("What's the Question?", input)
-			newComp.Questions = append(newComp.Questions, *input)
-		case "-b":
-			fmt.Scanln(input)
-			for i := range newComp.Questions {
-				if newComp.Questions[i] != *input {
-
-				}
-			}
-		case "-f":
-			fmt.Println(newComp)
-		case "-exit":
-			fmt.Println("Save? [Y/N]")
-			fmt.Scanln(input)
-			if *input == "Y" {
-				TCP.AddCompetition(newName, newComp)
-				//Add the form to the competiton list
-			}
-			return
 		}
 	}
 }

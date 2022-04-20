@@ -57,6 +57,10 @@ func FromBytes(data []byte) Form {
 }
 
 func AddCompetition(compName string, newForm Form) {
+	if compName == "" {
+		return
+	}
+
 	compTemplates[compName] = newForm
 }
 
@@ -67,4 +71,8 @@ func ListCompetitions() string {
 	}
 
 	return output
+}
+
+func SubmitForm(form Form) {
+	conn.Write(append([]byte("Comp "), ToBytes(form)...))
 }
