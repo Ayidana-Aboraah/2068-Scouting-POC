@@ -3,7 +3,6 @@ package test
 import (
 	"2068_Scouting/TCP"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -13,9 +12,8 @@ func TestSaveAndLoad(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = os.Mkdir("save", os.ModePerm)
-	if err != nil {
-		t.Error(err)
+	if _, err := os.ReadDir("save"); err != nil {
+		os.Mkdir("save", os.ModeDir)
 	}
 
 	//Saving
@@ -25,7 +23,7 @@ func TestSaveAndLoad(t *testing.T) {
 	}
 
 	test_forms := []TCP.Form{
-		{},
+		{Team: 2068, Questions: []string{"searching"}, Answers: []string{"blame"}},
 		{},
 		{},
 	}
@@ -42,11 +40,23 @@ func TestSaveAndLoad(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	t.Log(data)
 
-	raw := strings.Split(string(data), "µ")
+	raw := TCP.SeperateBy(data, byte('µ'))
 	var newForms []TCP.Form
 
+	t.Log(raw)
+
+	if len(raw) == 0 {
+		t.Error("Raw = 0; Something seems off...")
+	}
+
 	for i := range raw {
+		if len(raw[i]) == 0 {
+			t.Log(i)
+			continue
+		}
+		t.Log(raw[i])
 		newForms = append(newForms, TCP.FromBytes([]byte(raw[i]), false))
 	}
 
@@ -62,12 +72,19 @@ func TestSaveAndLoad(t *testing.T) {
 
 		for x := range newForms[i].Questions {
 			if newForms[i].Questions[x] != test_forms[i].Questions[x] {
-				t.Errorf("Question %v in form %v don't match up", x, i)
+				t.Errorf("Questions %v in form %v don't match up", x, i)
 			}
 
 			if newForms[i].Answers[x] != test_forms[i].Answers[x] {
-				t.Errorf("Question %v in form %v don't match up", x, i)
+				t.Errorf("Answers %v in form %v don't match up", x, i)
 			}
 		}
 	}
+}
+
+func TestTemplateSave(t *testing.T) {
+	//Add to the comp templates
+	//Save the comps and keys
+	//Load the comps and keys
+	//Check the comps and keys against what you originally sent
 }
