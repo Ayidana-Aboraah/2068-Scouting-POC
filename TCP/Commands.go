@@ -63,12 +63,12 @@ func competition(cmd []string, conn net.Conn) {
 	switch cmd[0] {
 	case "list":
 		var temp string
-		for comp := range compTemplates {
+		for comp := range CompTemplates {
 			temp += comp + "¶"
 		}
 		conn.Write([]byte(temp + "\n"))
 	default:
-		if form, found := compTemplates[cmd[1]]; found {
+		if form, found := CompTemplates[cmd[1]]; found {
 			conn.Write(ToBytes(form))
 			return
 		}

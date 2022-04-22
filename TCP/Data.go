@@ -10,7 +10,7 @@ import (
 
 var compKeys []string //Used by Client
 
-var compTemplates = map[string]Form{} //Used by Host
+var CompTemplates = map[string]Form{} //Used by Host
 
 var database = netComp{
 	competitions: make(map[string][]Form),
@@ -32,12 +32,12 @@ func AddCompetition(compName string, newForm Form) {
 		return
 	}
 
-	compTemplates[compName] = newForm
+	CompTemplates[compName] = newForm
 }
 
 func ListCompetitions() string {
 	var output string
-	for k := range compTemplates {
+	for k := range CompTemplates {
 		output += k + "\n"
 	}
 
@@ -94,33 +94,25 @@ func SaveTemplates() {
 		os.Mkdir("save", os.ModeDir)
 	}
 
-	var keys []string
-	var comps []Form
-	for k, v := range compTemplates {
-		keys = append(keys, k)
-		comps = append(comps, v)
+	var keys string
+	var comps []byte
+	for k, v := range CompTemplates {
+		keys = k + "\n"
+		comps = append(comps, ToBytes(v)...)
 	}
 
-	//Write to a file of templates
-	keys_save, err := os.OpenFile(path+"/save/template_names.txt", os.O_CREATE, os.ModePerm)
+	err = os.WriteFile(path+"/save/template_names.txt", []byte(keys), os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer keys_save.Close()
 
-	form_save, err := os.OpenFile(path+"/save/template_forms.MetalJacket", os.O_CREATE, os.ModePerm)
+	err = os.WriteFile(path+"/save/template_forms.MetalJacket", comps, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
-	}
-	defer form_save.Close()
-
-	for i := 0; i < len(comps); i++ {
-		keys_save.Write([]byte(keys[i] + "µ"))
-		form_save.Write(append(ToBytes(comps[i]), []byte("µ")...))
 	}
 }
 
-func loadTemplates() {
+func LoadTemplates() {
 	path, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -131,7 +123,7 @@ func loadTemplates() {
 		log.Fatal(err)
 	}
 
-	keys := strings.Split(string(data), "µ")
+	keys := strings.Split(string(data), "\n")
 
 	raw, err := os.ReadFile(path + "/save/template_forms.MetalJacket")
 	if err != nil {
@@ -139,11 +131,15 @@ func loadTemplates() {
 	}
 
 	// forms := strings.Split(string(raw), "µ")
-	forms := SeperateBy(raw, 'µ')
+	forms := SeperateBy(raw, '\n')
 
-	for i := 0; i < len(keys); i++ {
-		compTemplates[keys[i]] = FromBytes([]byte(forms[i]), true)
+	newTemp := map[string]Form{}
+
+	for i := 0; i < len(keys)-1; i++ {
+		newTemp[keys[i]] = FromBytes([]byte(forms[i]), true)
 	}
+
+	CompTemplates = newTemp
 }
 
 func SeperateBy(data []byte, seperator byte) [][]byte {
