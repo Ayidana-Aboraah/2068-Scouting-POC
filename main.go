@@ -33,6 +33,8 @@ func main() {
 		case "-q", "quit":
 			switch status {
 			case 2:
+				TCP.SaveTemplates()
+				TCP.Save()
 				TCP.ShutDown()
 			case 1:
 				TCP.DisconnectTCP()
@@ -43,6 +45,8 @@ func main() {
 			continue
 		case "-h", "host":
 			go TCP.StartTCP()
+			TCP.LoadTemplates()
+			TCP.Load()
 			status = 2
 			continue
 		}

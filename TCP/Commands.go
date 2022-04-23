@@ -44,11 +44,11 @@ func HandleConnection(conn net.Conn, done chan bool) {
 		case "Comp":
 			competition(str[1:], conn)
 		case "Submit":
-			database.competitions[str[1]] = []Form{} //For Testing
+			Database.Competitions[str[1]] = []Form{} //For Testing
 
 			submission := FromBytes(s.Bytes()[len(str[1])+8:], false)
-			database.competitions[str[1]] = append(database.competitions[str[1]], submission)
-			conn.Write(ToBytes(database.competitions[str[1]][0]))
+			Database.Competitions[str[1]] = append(Database.Competitions[str[1]], submission)
+			conn.Write(ToBytes(Database.Competitions[str[1]][0]))
 			// conn.Write(s.Bytes()[8+len(str[1]):])
 		default:
 			conn.Write([]byte("!")) //This will act as our basic error message

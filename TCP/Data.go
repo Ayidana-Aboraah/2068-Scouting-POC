@@ -12,13 +12,13 @@ var compKeys []string //Used by Client
 
 var CompTemplates = map[string]Form{} //Used by Host
 
-var database = netComp{
-	competitions: make(map[string][]Form),
+var Database = netComp{
+	Competitions: make(map[string][]Form),
 	RWMutex:      &sync.RWMutex{},
 }
 
 type netComp struct {
-	competitions map[string][]Form
+	Competitions map[string][]Form
 	*sync.RWMutex
 }
 
@@ -84,6 +84,21 @@ func FromBytes(data []byte, template bool) Form {
 	return newForm
 }
 
+func SeperateBy(data []byte, seperator byte) [][]byte {
+	var raw [][]byte
+	var previous int
+
+	for i := 0; i < len(data); i++ {
+		if data[i] == seperator {
+			raw = append(raw, data[previous:i])
+			i++
+			previous = i
+		}
+	}
+
+	return raw
+}
+
 func SaveTemplates() {
 	path, err := os.Getwd()
 	if err != nil {
@@ -123,14 +138,13 @@ func LoadTemplates() {
 		log.Fatal(err)
 	}
 
-	keys := strings.Split(string(data), "\n")
-
 	raw, err := os.ReadFile(path + "/save/template_forms.MetalJacket")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// forms := strings.Split(string(raw), "µ")
+	keys := strings.Split(string(data), "\n")
+
 	forms := SeperateBy(raw, '\n')
 
 	newTemp := map[string]Form{}
@@ -142,17 +156,63 @@ func LoadTemplates() {
 	CompTemplates = newTemp
 }
 
-func SeperateBy(data []byte, seperator byte) [][]byte {
-	var raw [][]byte
-	var previous int
+func Save() {
+	var keys string
+	var data []byte
 
-	for i := 0; i < len(data); i++ {
-		if data[i] == seperator {
-			raw = append(raw, data[previous:i])
-			i++
-			previous = i
-		}
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return raw
+	for k, v := range Database.Competitions {
+		keys += k + "\n"
+		for i := range v {
+			data = append(data, ToBytes(v[i])...)
+		}
+		data = append(data, byte('µ'))
+	}
+
+	os.WriteFile(path+"/save/keys.txt", []byte(keys), os.ModePerm)
+	os.WriteFile(path+"/save/forms.MetalJacket", data, os.ModePerm)
+}
+
+func Load() {
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data, err := os.ReadFile(path + "/save/keys.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raw, err := os.ReadFile(path + "/save/forms.MetalJacket")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	keys := strings.Split(string(data), "\n")
+
+	stack := SeperateBy(raw, 'µ')
+
+	newTemp := map[string][]Form{}
+
+	var compForms [][]Form
+
+	for i := range stack {
+		var subForm []Form
+		bang := SeperateBy(stack[i], '\n')
+		for o := range bang {
+			subForm = append(subForm, FromBytes(bang[o], false))
+		}
+		compForms = append(compForms, subForm)
+	}
+
+	for i := 0; i < len(keys)-1; i++ {
+		newTemp[keys[i]] = compForms[i]
+	}
+
+	Database.Competitions = newTemp
 }

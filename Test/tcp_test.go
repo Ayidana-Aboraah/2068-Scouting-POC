@@ -18,7 +18,7 @@ func TestStartTCP(t *testing.T) {
 	defer listener.Close()
 
 	done := make(chan bool)
-	timer := time.NewTimer(10 * time.Second)
+	timer := time.NewTimer(5 * time.Second)
 	go func() {
 		for {
 			conn, err := listener.Accept()
@@ -57,7 +57,7 @@ func TestSendTCP(t *testing.T) {
 //Make a recieve function
 
 func TestRecieveTCP(t *testing.T) {
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 	go TCP.StartTCP()
 
 	connection, err := net.Dial("tcp", ":9500")
@@ -81,6 +81,7 @@ func TestRecieveTCP(t *testing.T) {
 }
 
 func TestSubmit(t *testing.T) {
+	time.Sleep(1 * time.Second)
 	go TCP.StartTCP()
 
 	connection, err := net.Dial("tcp", ":9500")
