@@ -10,11 +10,10 @@ import (
 
 var status uint8
 
-type blank struct{}
-
 func main() {
 	input := bufio.NewScanner(os.Stdin)
 	var header string
+	var comps string
 	for {
 		switch status {
 		case 2:
@@ -24,7 +23,7 @@ func main() {
 		default:
 			header = "Options: -q = close app | -h = host | -c = connect to a host"
 		}
-		header += "\nCompetitions:" + TCP.ListCompetitions()
+		header += "\nCompetitions:" + comps
 		fmt.Println(header)
 
 		input.Scan()
@@ -47,6 +46,7 @@ func main() {
 			go TCP.StartTCP()
 			TCP.LoadTemplates()
 			TCP.Load()
+			comps = TCP.ListCompetitions()
 			status = 2
 			continue
 		}
@@ -61,7 +61,7 @@ func main() {
 				NewCompetition(input, true)
 			}
 		case "-c", "connect":
-			TCP.ConnectToTCP(cmd[1])
+			comps = TCP.ConnectToTCP(cmd[1])
 			status = 1
 		}
 	}

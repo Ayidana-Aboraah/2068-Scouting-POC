@@ -58,15 +58,17 @@ func FindIP() string {
 	return ipAddress.String()[:i] // + ":9500"
 }
 
-func ConnectToTCP(ip string) error {
+func ConnectToTCP(ip string) string {
 	connection, err := net.Dial("tcp", ip+":9500")
+	if err != nil {
+		log.Fatal(err)
+	}
 	conn = connection
 
 	connection.Write([]byte("Comp list\n"))
 	message, _ := bufio.NewReader(connection).ReadString('\n')
 
-	compKeys = strings.Split(message, "¶")
-	return err
+	return strings.ReplaceAll(message, "¶", "\n")
 }
 
 func DisconnectTCP() {

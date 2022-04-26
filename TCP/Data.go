@@ -8,8 +8,6 @@ import (
 	"sync"
 )
 
-var compKeys []string //Used by Client
-
 var CompTemplates = map[string]Form{} //Used by Host
 
 var Database = netComp{
